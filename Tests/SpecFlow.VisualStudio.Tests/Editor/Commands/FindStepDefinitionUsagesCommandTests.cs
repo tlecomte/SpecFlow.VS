@@ -28,7 +28,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
 
             ModifyFeatureFileInEditor(featureFile, new Span(50, 16), "When I choose add");
             Dump(featureFile, "After modification");
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             (ProjectScope.IdeScope.Actions as StubIdeActions).LastShowContextMenuItems.Should()
                 .Contain(mi => mi.Label == "calculator.feature(3,8): When I choose add");
@@ -41,7 +41,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var featureFile = ArrangeOneFeatureFile();
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             (ProjectScope.IdeScope.Actions as StubIdeActions).LastShowContextMenuItems.Should()
                 .Contain(mi => mi.Label == "Could not find any usage");
@@ -57,7 +57,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var featureFile = ArrangeOneFeatureFile();
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             (ProjectScope.IdeScope.Actions as StubIdeActions).LastShowContextMenuItems.Should()
                 .Contain(mi => mi.Label == "calculator.feature(3,8): When I press add");

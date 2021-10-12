@@ -42,10 +42,15 @@ public abstract class CommandTestBase<T> : EditorTestBase where T : DeveroomEdit
         return (textView, command);
     }
 
-    protected Task<IAnalyticsEvent> Invoke(T command, StubWpfTextView textView)
+    protected Task<IAnalyticsEvent> InvokeAndWaitAnalyticsEvent(T command, StubWpfTextView textView)
     {
-        command.PreExec(textView, command.Targets.First());
+        Invoke(command, textView);
         return WaitForCommandToComplete();
+    }
+
+    protected static bool Invoke(T command, StubWpfTextView textView)
+    {
+        return command.PreExec(textView, command.Targets.First());
     }
 
     protected Task<IAnalyticsEvent> WaitForCommandToComplete()

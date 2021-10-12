@@ -37,12 +37,6 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
                 .RegisterWindowAction<RenameStepViewModel>(model => model.StepText = modelStepText);
         }
 
-        private async Task BindingRegistryIsModified(string dialogExpression)
-        {
-            var bindingRegistry = await ProjectScope.GetDiscoveryService().GetBindingRegistryAsync();
-            bindingRegistry.StepDefinitions.Should().Contain(sd => sd.Expression == dialogExpression);
-        }
-
         [Fact]
         public void There_is_a_project_in_ide()
         {
@@ -63,7 +57,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         {
             var command = new RenameStepCommand(ProjectScope.IdeScope, null, ProjectScope.IdeScope.MonitoringService);
             var inputText = new TestText(string.Empty);
-            var textView = CreateTextView(inputText);
+            var textView = CreateTextView(inputText, VsContentTypes.CSharp, "Steps.cs");
 
             command.PreExec(textView, command.Targets.First());
 
@@ -79,7 +73,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var command = new RenameStepCommand(ProjectScope.IdeScope, null, ProjectScope.IdeScope.MonitoringService);
             var inputText = new TestText(string.Empty);
 
-            var textView = CreateTextView(inputText);
+            var textView = CreateTextView(inputText, VsContentTypes.CSharp, "Steps.cs");
             command.PreExec(textView, command.Targets.First());
 
             var stubLogger = GetStubLogger();
@@ -150,7 +144,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var featureFile = ArrangeOneFeatureFile(string.Empty);
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             Dump(textView, "Step definition class after rename");
             var stubLogger = GetStubLogger();
@@ -184,7 +178,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(dialogExpression);
             var (textView, command) = ArrangeSut(stepDefinitions, featureFile);
             
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             var testText = Dump(textView, "Step definition class after rename");
             testText.Lines[6].Should().Be(updatedLine);
@@ -215,7 +209,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(modelStepText);
             var (textView, command) = ArrangeSut(stepDefinitions, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             var stubLogger = GetStubLogger();
             var logMessage = WithoutWarningHeader(stubLogger.Messages.Last().Message);
@@ -231,7 +225,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(@"I choose add");
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             var testText = Dump(textView, "Step definition class after rename");
             testText.Lines[6].Should().Be(@"        [WhenDerived(""I choose add"")]");
@@ -299,7 +293,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(@"I choose add");
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             ProjectScope.IdeScope.GetTextBuffer(new SourceLocation(featureFile.FileName, 1, 1), out var featureFileTextBuffer);
             var featureText = Dump(featureFileTextBuffer, "Feature file after rename");
@@ -320,7 +314,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(updatedExpression);
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             var featureText = Dump(featureFile, "Feature file after rename");
             featureText.Lines[2].Should().Be($@"                    When {expectedStepText}");
@@ -374,7 +368,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             ArrangePopup(updatedExpression);
             var (textView, command) = ArrangeSut(stepDefinition, featureFile);
 
-            await Invoke(command, textView);
+            await InvokeAndWaitAnalyticsEvent(command, textView);
 
             return Dump(featureFile, "Feature file after rename");
         }
