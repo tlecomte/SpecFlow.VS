@@ -59,7 +59,7 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     }
 
     [Theory]
-    [InlineData("01", @"""I press add""")]
+    [InlineData("01", @"@""I press add""")]
     public async Task Step_definition_class_saved(string _, string expression)
     {
         var featureFile = ArrangeOneFeatureFile();

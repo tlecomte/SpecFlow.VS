@@ -179,6 +179,6 @@ public abstract class EditorTestBase
     protected async Task BindingRegistryIsModified(string expression)
     {
         var bindingRegistry = await ProjectScope.GetDiscoveryService().GetBindingRegistryAsync();
-        bindingRegistry.StepDefinitions.Should().Contain(sd => sd.Expression == expression);
+        bindingRegistry.StepDefinitions.Should().Contain(sd => sd.Expression == expression, $"after modification I should see <{expression}>");
     }
 }

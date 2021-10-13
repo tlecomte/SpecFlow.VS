@@ -174,6 +174,13 @@ namespace SpecFlow.VisualStudio.Discovery
             return sdMatches;
         }
 
+        public ProjectBindingRegistry AddStepDefinition(ProjectStepDefinitionBinding sd)
+        {
+            var stepDefinitions = StepDefinitions.ToList();
+            stepDefinitions.Add(sd);
+            return new ProjectBindingRegistry(stepDefinitions);
+        }
+
         public ProjectBindingRegistry ReplaceStepDefinition(ProjectStepDefinitionBinding original, ProjectStepDefinitionBinding replacement)
         {
             return new ProjectBindingRegistry(StepDefinitions.Select(sd => sd == original ? replacement : sd));
