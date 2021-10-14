@@ -62,7 +62,7 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     }
 
     [Theory]
-    [InlineData("01", @"@""I press add""")]
+    [InlineData("01", @"I press add")]
     public async Task Step_definition_class_saved(string _, string expression)
     {
         var featureFile = ArrangeOneFeatureFile();
@@ -78,7 +78,7 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
         Dump(ProjectScope.StubIdeScope.CurrentTextView, "Created stepDefinition file");
         createdStepDefinitionContent.Should().Contain(expression);
 
-        System.Threading.Thread.Sleep(1000);
+        System.Threading.Thread.Sleep(1000); //TODO: implement non-blocking wait
         await BindingRegistryIsModified(expression);
     }
 }

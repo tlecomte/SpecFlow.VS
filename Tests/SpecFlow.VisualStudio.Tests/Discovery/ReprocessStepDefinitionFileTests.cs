@@ -6,6 +6,8 @@ using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using FluentAssertions;
+using Microsoft.VisualStudio.Text;
+using Newtonsoft.Json;
 using SpecFlow.VisualStudio.Discovery;
 using SpecFlow.VisualStudio.ProjectSystem;
 using SpecFlow.VisualStudio.SpecFlowConnector.Models;
@@ -54,32 +56,82 @@ public class ReprocessStepDefinitionFileTests
         Approvals.Verify(dumped);
     }
 
+    private string _indent = string.Empty;
+
+    private void IncreaseIndent()
+    {
+        _indent += "  ";
+    }
+
+    private void DecreaseIndent()
+    {
+        _indent = _indent.Substring(0, _indent.Length - 2);
+    }
+
     public string Dump(ProjectBindingRegistry bindingRegistry)
     {
-        var sb = new StringBuilder("ProjectBindingRegistry");
+        IncreaseIndent();
+        var sb = new StringBuilder("ProjectBindingRegistry:");
         sb.AppendLine();
-        if (bindingRegistry.IsFailed) sb.AppendLine("  Failed");
+        if (bindingRegistry.IsFailed) sb.AppendLine("{_indent}Failed");
         int i = 0;
         foreach (ProjectStepDefinitionBinding binding in bindingRegistry.StepDefinitions)
         {
-            sb.AppendLine($"  ProjectStepDefinitionBinding-{i}");
-            sb.AppendLine(Dump(binding));
+            sb.AppendLine($"{_indent}ProjectStepDefinitionBinding-{i}:");
+            sb.Append(Dump(binding));
         }
 
+        DecreaseIndent();
         return sb.ToString();
     }
-    
+
     public string Dump(ProjectStepDefinitionBinding binding)
     {
+        IncreaseIndent();
         var sb = new StringBuilder();
-        sb.AppendLine($"    {nameof(binding.IsValid)}:`{binding.IsValid}`");
-        sb.AppendLine($"    {nameof(binding.Error)}:`{binding.Error}`");
-        sb.AppendLine($"    {nameof(binding.StepDefinitionType)}:`{binding.StepDefinitionType}`");
-        sb.AppendLine($"    {nameof(binding.SpecifiedExpression)}:`{binding.SpecifiedExpression}`");
-        sb.AppendLine($"    {nameof(binding.Regex)}:`{binding.Regex}`");
-        sb.AppendLine($"    {nameof(binding.Scope)}:`{binding.Scope}`");
-        sb.AppendLine($"    {nameof(binding.Implementation)}:`{binding.Implementation}`");
-        sb.AppendLine($"    {nameof(binding.Expression)}:`{binding.Expression}`");
+        sb.AppendLine($"{_indent}{nameof(binding.IsValid)}:`{binding.IsValid}`");
+        sb.AppendLine($"{_indent}{nameof(binding.Error)}:`{binding.Error}`");
+        sb.AppendLine($"{_indent}{nameof(binding.StepDefinitionType)}:`{binding.StepDefinitionType}`");
+        sb.AppendLine($"{_indent}{nameof(binding.SpecifiedExpression)}:`{binding.SpecifiedExpression}`");
+        sb.AppendLine($"{_indent}{nameof(binding.Regex)}:`{binding.Regex}`");
+        sb.AppendLine($"{_indent}{nameof(binding.Scope)}:`{binding.Scope}`");
+        sb.AppendLine($"{_indent}{nameof(binding.Implementation)}:");
+        sb.Append(Dump(binding.Implementation));
+        sb.AppendLine($"{_indent}{nameof(binding.Expression)}:`{binding.Expression}`");
+        DecreaseIndent();
+        return sb.ToString();
+    }
+
+    public string Dump(ProjectStepDefinitionImplementation implementation)
+    {
+        IncreaseIndent();
+        var sb = new StringBuilder();
+        sb.AppendLine($"{_indent}{nameof(implementation.Method)}:`{implementation.Method}`");
+        sb.AppendLine($"{_indent}{nameof(implementation.ParameterTypes)}:`{implementation.ParameterTypes}`");
+        IncreaseIndent();
+        foreach (string parameterType in implementation.ParameterTypes)
+        {
+            sb.AppendLine($"{_indent}- `{parameterType}`");
+        }
+        DecreaseIndent();
+        sb.AppendLine($"{_indent}{nameof(implementation.SourceLocation)}:");
+        sb.Append(Dump(implementation.SourceLocation));
+        DecreaseIndent();
+        return sb.ToString();
+    }
+
+    public string Dump(SourceLocation sourceLocation)
+    {
+        if (sourceLocation == null) return string.Empty;
+        IncreaseIndent();
+        var sb = new StringBuilder();
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceFile)}:`{sourceLocation.SourceFile}`");
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceFileColumn)}:`{sourceLocation.SourceFileColumn}`");
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceFileEndColumn)}:`{sourceLocation.SourceFileEndColumn}`");
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceFileEndLine)}:`{sourceLocation.SourceFileEndLine}`");
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceLocationSpan)}:`{sourceLocation.SourceLocationSpan}`");
+        sb.AppendLine($"{_indent}{nameof(sourceLocation.SourceFileLine)}:`{sourceLocation.SourceFileLine}`");
+        DecreaseIndent();
         return sb.ToString();
     }
 }

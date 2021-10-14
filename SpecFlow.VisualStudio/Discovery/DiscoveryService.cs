@@ -326,26 +326,29 @@ namespace SpecFlow.VisualStudio.Discovery
             var bi = new BindingImporter(new Dictionary<string, string>(), new Dictionary<string, string>(),
                 _projectScope.IdeScope.Logger);
 
+            var bindingRegistry = await GetBindingRegistryAsync();
             foreach (MethodDeclarationSyntax method in allMethods)
             {
+                var containingClass = method.Parent as ClassDeclarationSyntax;
                 var attributes = RenameStepStepDefinitionClassAction.GetAttributesWithTokens(method);
                 foreach (var (attribute, token) in attributes)
                 {
                     var sd = new StepDefinition();
 
-                    sd.Method = method.Identifier.Text;
+                    sd.Method = $"{containingClass.Identifier.Text}.{method.Identifier.Text}";
                     sd.Type = attribute.Name.ToString();
-                    sd.Expression = token.Text;
+                    sd.Expression = token.ValueText;
                     sd.Regex = $"^{sd.Expression}$";
 
                     var stepDefinitionBinding = bi.ImportStepDefinition(sd);
 
-                    var bindingRegistry = await GetBindingRegistryAsync();
+                    
                     bindingRegistry =
                         bindingRegistry.AddStepDefinition(stepDefinitionBinding);
-                    ReplaceBindingRegistry(bindingRegistry);
+                    
                 }
             }
+            ReplaceBindingRegistry(bindingRegistry);
         }
     }
 }

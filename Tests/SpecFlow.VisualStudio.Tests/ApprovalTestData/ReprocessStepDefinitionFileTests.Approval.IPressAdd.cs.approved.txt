@@ -1,11 +1,13 @@
-﻿ProjectBindingRegistry
-  ProjectStepDefinitionBinding-0
+﻿ProjectBindingRegistry:
+  ProjectStepDefinitionBinding-0:
     IsValid:`True`
     Error:``
     StepDefinitionType:`When`
-    SpecifiedExpression:`@"I press add"`
-    Regex:`^@"I press add"$`
+    SpecifiedExpression:`I press add`
+    Regex:`^I press add$`
     Scope:``
-    Implementation:`WhenIPressAdd`
-    Expression:`@"I press add"`
-
+    Implementation:
+      Method:`Feature1StepDefinitions.WhenIPressAdd`
+      ParameterTypes:`System.String[]`
+      SourceLocation:
+    Expression:`I press add`
