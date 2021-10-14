@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using SpecFlow.VisualStudio.Diagnostics;
 using SpecFlow.VisualStudio.Discovery;
@@ -169,61 +170,14 @@ namespace SpecFlow.VisualStudio.Editor.Commands
             projectScope.AddFile(targetFilePath, template);
             projectScope.IdeScope.Actions.NavigateTo(new SourceLocation(targetFilePath, 9, 1));
 
-
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(template);
-            var rootNode = tree.GetRoot();
-            var syntaxNodes = new List<SyntaxNode>();
-            var dn = rootNode.DescendantNodes(sn => { 
-                syntaxNodes.Add(sn);
-                return true;
-            }).ToArray();
-            var allMethods = dn.OfType<MethodDeclarationSyntax>().ToArray();
-
-
-            RenameStepCommandContext ctx = new RenameStepCommandContext(projectScope.IdeScope);
-            ctx.ProjectOfStepDefinitionClass = projectScope;
-
-            var bi = new BindingImporter(new Dictionary<string, string>(), new Dictionary<string, string>(),
-                projectScope.IdeScope.Logger);
-
-            foreach (MethodDeclarationSyntax method in allMethods)
-            {
-                var attributes = RenameStepStepDefinitionClassAction.GetAttributesWithTokens(method);
-                foreach (var (attribute, token) in attributes)
-                {
-                    var sd = new StepDefinition();
-
-                    sd.Method = method.Identifier.Text;
-                    sd.Type = attribute.Name.ToString();
-                    sd.Expression = token.Text;
-                    sd.Regex = $"^{sd.Expression}$";
-
-                    ctx.StepDefinitionBinding = bi.ImportStepDefinition(sd);
-
-                    UpdateBindingRegistry(ctx);
-                }
-
-            }
-            
+            _ = projectScope.IdeScope.RunOnBackgroundThread(()=>RebuildBindingRegistry(projectScope, targetFilePath, template), _=>{ });
         }
 
-        private ProjectBindingRegistry GetBindingRegistry(RenameStepCommandContext ctx)
+        private static Task RebuildBindingRegistry(IProjectScope projectScope, string targetFilePath, string template)
         {
-            var discoveryService = ctx.ProjectOfStepDefinitionClass.GetDiscoveryService();
-            var bindingRegistry = discoveryService.GetBindingRegistry();
-            if (bindingRegistry.IsFailed)
-                Logger.LogWarning(
-                    $"Unable to get step definitions from project '{ctx.ProjectOfStepDefinitionClass.ProjectName}', usages will not be found for this project.");
-            return bindingRegistry;
-        }
-
-        private void UpdateBindingRegistry(RenameStepCommandContext ctx)
-        {
-            var bindingRegistry = GetBindingRegistry(ctx);
-            bindingRegistry =
-                bindingRegistry.AddStepDefinition(ctx.StepDefinitionBinding);
-            var discoveryService = ctx.ProjectOfStepDefinitionClass.GetDiscoveryService();
-            discoveryService.ReplaceBindingRegistry(bindingRegistry);
+            var discoveryService = projectScope.GetDiscoveryService();
+            CSharpStepDefinitionFile stepDefinitionFile = new CSharpStepDefinitionFile(targetFilePath, template);
+            return discoveryService.ProcessAsync(stepDefinitionFile);
         }
     }
 }

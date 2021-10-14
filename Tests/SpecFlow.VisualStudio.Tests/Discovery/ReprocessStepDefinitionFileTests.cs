@@ -44,10 +44,6 @@ public class ReprocessStepDefinitionFileTests
         var discoveryService =
             MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, Array.Empty<StepDefinition>(), TimeSpan.Zero);
         discoveryService.WaitUntilDiscoveryPerformed();
-        // _projectScope.AddFile("test.feature", string.Empty);
-
-
-//        discoveryService.InitializeBindingRegistry();
 
         //act
         await discoveryService.ProcessAsync(stepDefinitionFile);

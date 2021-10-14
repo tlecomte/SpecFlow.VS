@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using EnvDTE;
 using FluentAssertions;
 using SpecFlow.VisualStudio.Editor.Commands;
 using SpecFlow.VisualStudio.Editor.Services;
+using SpecFlow.VisualStudio.ProjectSystem;
 using SpecFlow.VisualStudio.SpecFlowConnector.Models;
 using SpecFlow.VisualStudio.UI.ViewModels;
 using SpecFlow.VisualStudio.VsxStubs;
 using SpecFlow.VisualStudio.VsxStubs.ProjectSystem;
+using SpecFlow.VisualStudio.VsxStubs.StepDefinitions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -74,6 +77,8 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
         var createdStepDefinitionContent = ProjectScope.StubIdeScope.CurrentTextView.TextBuffer.CurrentSnapshot.GetText();
         Dump(ProjectScope.StubIdeScope.CurrentTextView, "Created stepDefinition file");
         createdStepDefinitionContent.Should().Contain(expression);
+
+        System.Threading.Thread.Sleep(1000);
         await BindingRegistryIsModified(expression);
     }
 }
