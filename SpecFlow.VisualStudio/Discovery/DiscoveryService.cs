@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SpecFlow.VisualStudio.Diagnostics;
 using SpecFlow.VisualStudio.Monitoring;
 using SpecFlow.VisualStudio.ProjectSystem;
 using SpecFlow.VisualStudio.ProjectSystem.Configuration;
 using SpecFlow.VisualStudio.ProjectSystem.Settings;
 using Microsoft.VisualStudio.Shell;
+using SpecFlow.VisualStudio.Editor.Commands;
+using SpecFlow.VisualStudio.SpecFlowConnector.Models;
 
 namespace SpecFlow.VisualStudio.Discovery
 {
@@ -76,13 +82,27 @@ namespace SpecFlow.VisualStudio.Discovery
 
         protected virtual ConfigSource GetTestAssemblySource(ProjectSettings projectSettings)
         {
-            return projectSettings.IsSpecFlowTestProject ? 
+            return projectSettings.IsSpecFlowProject ? 
                 ConfigSource.TryGetConfigSource(projectSettings.OutputAssemblyPath, FileSystem, _logger) : null;
         }
 
         public ProjectBindingRegistry GetBindingRegistry()
         {
             return _cached.BindingRegistry;
+        }
+
+        public async Task<ProjectBindingRegistry> GetBindingRegistryAsync()
+        {
+            if (!_isDiscovering)
+                return GetBindingRegistry();
+
+            var completionSource = new TaskCompletionSource<ProjectBindingRegistry>();
+            _backgroundDiscoveryCompletionSources.Enqueue(completionSource);
+
+            if (!_isDiscovering) // in case it finished discovery while we were registering the completion source
+                return GetBindingRegistry();
+
+            return await completionSource.Task;
         }
 
         private void TriggerDiscovery()
@@ -109,7 +129,7 @@ namespace SpecFlow.VisualStudio.Discovery
                 return new ProjectBindingRegistryCacheUninitializedProjectSettings();
             }
 
-            if (!projectSettings.IsSpecFlowTestProject)
+            if (!projectSettings.IsSpecFlowProject)
             {
                 _logger.LogVerbose("Non-SpecFlow test project");
                 if (_cached is ProjectBindingRegistryCacheUninitialized)
@@ -162,20 +182,6 @@ namespace SpecFlow.VisualStudio.Discovery
 
         private readonly ConcurrentQueue<TaskCompletionSource<ProjectBindingRegistry>>
             _backgroundDiscoveryCompletionSources = new ConcurrentQueue<TaskCompletionSource<ProjectBindingRegistry>>();
-
-        public async Task<ProjectBindingRegistry> GetBindingRegistryAsync()
-        {
-            if (!_isDiscovering)
-                return GetBindingRegistry();
-
-            var completionSource = new TaskCompletionSource<ProjectBindingRegistry>();
-            _backgroundDiscoveryCompletionSources.Enqueue(completionSource);
-
-            if (!_isDiscovering) // in case it finished discovery while we were registering the completion source
-                return GetBindingRegistry();
-
-            return await completionSource.Task;
-        }
 
         private ProjectBindingRegistryCache InvokeDiscoveryWithTimer(ProjectSettings projectSettings, ConfigSource testAssemblySource)
         {
@@ -304,6 +310,42 @@ namespace SpecFlow.VisualStudio.Discovery
         {
             _projectScope.IdeScope.WeakProjectsBuilt -= ProjectSystemOnProjectsBuilt;
             _projectSettingsProvider.SettingsInitialized -= ProjectSystemOnProjectsBuilt;
+        }
+
+        public async Task ProcessAsync(CSharpStepDefinitionFile stepDefinitionFile)
+        {
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(stepDefinitionFile.Content);
+            var rootNode = await tree.GetRootAsync();
+            var syntaxNodes = new List<SyntaxNode>();
+            var dn = rootNode.DescendantNodes(sn => {
+                syntaxNodes.Add(sn);
+                return true;
+            }).ToArray();
+            var allMethods = dn.OfType<MethodDeclarationSyntax>().ToArray();
+
+            var bi = new BindingImporter(new Dictionary<string, string>(), new Dictionary<string, string>(),
+                _projectScope.IdeScope.Logger);
+
+            foreach (MethodDeclarationSyntax method in allMethods)
+            {
+                var attributes = RenameStepStepDefinitionClassAction.GetAttributesWithTokens(method);
+                foreach (var (attribute, token) in attributes)
+                {
+                    var sd = new StepDefinition();
+
+                    sd.Method = method.Identifier.Text;
+                    sd.Type = attribute.Name.ToString();
+                    sd.Expression = token.Text;
+                    sd.Regex = $"^{sd.Expression}$";
+
+                    var stepDefinitionBinding = bi.ImportStepDefinition(sd);
+
+                    var bindingRegistry = await GetBindingRegistryAsync();
+                    bindingRegistry =
+                        bindingRegistry.AddStepDefinition(stepDefinitionBinding);
+                    ReplaceBindingRegistry(bindingRegistry);
+                }
+            }
         }
     }
 }
