@@ -339,7 +339,10 @@ namespace SpecFlow.VisualStudio.Discovery
                     sd.Type = attribute.Name.ToString();
                     sd.Expression = token.ValueText;
                     sd.Regex = $"^{sd.Expression}$";
-
+                    //var sourceKey = GetKey(_sourceFiles, startSequencePoint.SourcePath);
+                    //var sourceLocation = $"#{sourceKey}|{startSequencePoint.StartLine}|{startSequencePoint.StartColumn}|{endSequencePoint.EndLine}|{endSequencePoint.EndColumn}"";
+                    sd.SourceLocation = $"#0|{method.Body.Span.Start}|9|35|46";
+                    
                     var stepDefinitionBinding = bi.ImportStepDefinition(sd);
 
                     

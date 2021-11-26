@@ -10,4 +10,10 @@
       Method:`Feature1StepDefinitions.WhenIPressAdd`
       ParameterTypes:`System.String[]`
       SourceLocation:
+        SourceFile:`fghjk`
+        SourceFileColumn:`1`
+        SourceFileEndColumn:``
+        SourceFileEndLine:``
+        SourceLocationSpan:``
+        SourceFileLine:`1`
     Expression:`I press add`
