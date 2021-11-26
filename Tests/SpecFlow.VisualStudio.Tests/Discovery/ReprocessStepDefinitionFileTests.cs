@@ -32,6 +32,7 @@ public class ReprocessStepDefinitionFileTests
 
     [Theory]
     [InlineData("IPressAdd.cs")]
+    [InlineData("MultipleStepDefinitions.cs")]
     public async Task Approval(string testName)
     {
         //arrange

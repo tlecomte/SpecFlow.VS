@@ -5,9 +5,16 @@
     <AssemblyOriginatorKeyFile>..\..\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.IPressAdd.cs" />
+    <Compile Remove="NewFolder\**" />
+    <EmbeddedResource Remove="NewFolder\**" />
+    <None Remove="NewFolder\**" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.IPressAdd.cs" />
+    <Compile Remove="ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.MultipleStepDefinitions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.MultipleStepDefinitions.cs" />
     <Content Include="ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.IPressAdd.cs" />
   </ItemGroup>
 
@@ -28,9 +35,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\SpecFlow.VisualStudio\SpecFlow.VisualStudio.csproj" />
     <ProjectReference Include="..\SpecFlow.VisualStudio.VsxStubs\SpecFlow.VisualStudio.VsxStubs.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
   </ItemGroup>
 </Project>

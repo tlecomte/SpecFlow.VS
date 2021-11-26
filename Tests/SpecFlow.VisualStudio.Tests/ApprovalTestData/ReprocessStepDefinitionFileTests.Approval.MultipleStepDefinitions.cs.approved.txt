@@ -1,0 +1,37 @@
+﻿ProjectBindingRegistry:
+  ProjectStepDefinitionBinding-0:
+    IsValid:`True`
+    Error:``
+    StepDefinitionType:`When`
+    SpecifiedExpression:`I press add`
+    Regex:`^I press add$`
+    Scope:``
+    Implementation:
+      Method:`Feature1StepDefinitions.WhenIPressAdd`
+      ParameterTypes:`System.String[]`
+      SourceLocation:
+        SourceFile:`C:\git\SpecFlow.VS\Tests\SpecFlow.VisualStudio.Tests\ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.MultipleStepDefinitions.cs`
+        SourceFileColumn:`9`
+        SourceFileEndColumn:`9`
+        SourceFileEndLine:`13`
+        SourceLocationSpan:``
+        SourceFileLine:`11`
+    Expression:`I press add`
+  ProjectStepDefinitionBinding-0:
+    IsValid:`True`
+    Error:``
+    StepDefinitionType:`When`
+    SpecifiedExpression:`I press subtract`
+    Regex:`^I press subtract$`
+    Scope:``
+    Implementation:
+      Method:`Feature1StepDefinitions.WhenIPressAdd`
+      ParameterTypes:`System.String[]`
+      SourceLocation:
+        SourceFile:`C:\git\SpecFlow.VS\Tests\SpecFlow.VisualStudio.Tests\ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.MultipleStepDefinitions.cs`
+        SourceFileColumn:`9`
+        SourceFileEndColumn:`9`
+        SourceFileEndLine:`19`
+        SourceLocationSpan:``
+        SourceFileLine:`17`
+    Expression:`I press subtract`
