@@ -34,6 +34,7 @@ public class ReprocessStepDefinitionFileTests
     [Theory]
     [InlineData("IPressAdd.cs")]
     [InlineData("MultipleStepDefinitions.cs")]
+    [InlineData("IntParameter.cs")]
     public async Task Approval(string testName)
     {
         //arrange
@@ -76,7 +77,7 @@ public class Foo{
         _projectScope.AddSpecFlowPackage();
         var initialStepDefinitions = new[] { 
             new StepDefinition{Method = "Method", Regex = "^outdated expression", SourceLocation = stepDefinitionFilePath },
-            new StepDefinition{Method = "Foo", Regex = "^expression$", SourceLocation = otherStepDefinitionFilePath }
+            new StepDefinition{Method = "MethodInOtherFile", Regex = "^expression$", SourceLocation = otherStepDefinitionFilePath }
         };
         var discoveryService =
             MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, initialStepDefinitions, TimeSpan.Zero);
@@ -151,7 +152,7 @@ public class Foo{
         IncreaseIndent();
         var sb = new StringBuilder();
         sb.AppendLine($"{_indent}{nameof(implementation.Method)}:`{implementation.Method}`");
-        sb.AppendLine($"{_indent}{nameof(implementation.ParameterTypes)}:`{implementation.ParameterTypes}`");
+        sb.AppendLine($"{_indent}{nameof(implementation.ParameterTypes)}:[{implementation.ParameterTypes.Length}]");
         IncreaseIndent();
         foreach (string parameterType in implementation.ParameterTypes)
         {

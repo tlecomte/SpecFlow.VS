@@ -337,7 +337,10 @@ namespace SpecFlow.VisualStudio.Discovery
                 var methodBodyEndPosition = methodBodyEndToken.GetLocation().GetLineSpan().StartLinePosition;
 
                 Scope scope = null;
-                var parameterTypes = Array.Empty<string>();
+                var parameterTypes = method.ParameterList.Parameters
+                    .Select(p => p.Type.ToString())
+                    .ToArray();
+
                 var sourceLocation = new SourceLocation(stepDefinitionFile.StepDefinitionPath, methodBodyBeginPosition.Line+1, 
                     methodBodyBeginPosition.Character+1, 
                     methodBodyEndPosition.Line + 1, 

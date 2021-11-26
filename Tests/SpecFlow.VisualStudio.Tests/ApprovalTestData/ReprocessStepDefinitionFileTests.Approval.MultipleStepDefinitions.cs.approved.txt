@@ -8,7 +8,7 @@
     Scope:``
     Implementation:
       Method:`Feature1StepDefinitions.WhenIPressAdd`
-      ParameterTypes:`System.String[]`
+      ParameterTypes:[0]
       SourceLocation:
         SourceFile:`C:\<Full path to>\MultipleStepDefinitions.cs`
         SourceFileColumn:`9`
@@ -26,7 +26,7 @@
     Scope:``
     Implementation:
       Method:`Feature1StepDefinitions.WhenIPressAdd`
-      ParameterTypes:`System.String[]`
+      ParameterTypes:[0]
       SourceLocation:
         SourceFile:`C:\<Full path to>\MultipleStepDefinitions.cs`
         SourceFileColumn:`9`

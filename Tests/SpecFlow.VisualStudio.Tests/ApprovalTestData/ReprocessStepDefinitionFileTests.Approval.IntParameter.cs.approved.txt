@@ -3,17 +3,18 @@
     IsValid:`True`
     Error:``
     StepDefinitionType:`When`
-    SpecifiedExpression:`I press add`
-    Regex:`^I press add$`
+    SpecifiedExpression:`I press (.*)`
+    Regex:`^I press (.*)$`
     Scope:``
     Implementation:
-      Method:`Feature1StepDefinitions.WhenIPressAdd`
-      ParameterTypes:[0]
+      Method:`Feature1StepDefinitions.WhenIPress`
+      ParameterTypes:[1]
+        - `int`
       SourceLocation:
-        SourceFile:`C:\<Full path to>\IPressAdd.cs`
+        SourceFile:`C:\<Full path to>\IntParameter.cs`
         SourceFileColumn:`9`
         SourceFileEndColumn:`9`
         SourceFileEndLine:`13`
         SourceLocationSpan:``
         SourceFileLine:`11`
-    Expression:`I press add`
+    Expression:`I press (.*)`
