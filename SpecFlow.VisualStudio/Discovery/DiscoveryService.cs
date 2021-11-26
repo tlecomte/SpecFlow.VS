@@ -331,6 +331,14 @@ namespace SpecFlow.VisualStudio.Discovery
             {
                 var containingClass = method.Parent as ClassDeclarationSyntax;
                 var attributes = RenameStepStepDefinitionClassAction.GetAttributesWithTokens(method);
+
+                //var sourceKey = GetKey(_sourceFiles, startSequencePoint.SourcePath);
+                //var sourceLocation = $"#{sourceKey}|{startSequencePoint.StartLine}|{startSequencePoint.StartColumn}|{endSequencePoint.EndLine}|{endSequencePoint.EndColumn}"";
+                var methodBodyToken = method.Body.GetFirstToken();
+                var lineSpan = methodBodyToken.GetLocation().GetLineSpan();
+                var mappedLineSpan = methodBodyToken.GetLocation().GetMappedLineSpan();
+                var sourceLocation = $"#0|1|9|35|46";
+
                 foreach (var (attribute, token) in attributes)
                 {
                     var sd = new StepDefinition();
@@ -339,13 +347,10 @@ namespace SpecFlow.VisualStudio.Discovery
                     sd.Type = attribute.Name.ToString();
                     sd.Expression = token.ValueText;
                     sd.Regex = $"^{sd.Expression}$";
-                    //var sourceKey = GetKey(_sourceFiles, startSequencePoint.SourcePath);
-                    //var sourceLocation = $"#{sourceKey}|{startSequencePoint.StartLine}|{startSequencePoint.StartColumn}|{endSequencePoint.EndLine}|{endSequencePoint.EndColumn}"";
-                    sd.SourceLocation = $"#0|{method.Body.Span.Start}|9|35|46";
+                    sd.SourceLocation = sourceLocation;
                     
                     var stepDefinitionBinding = bi.ImportStepDefinition(sd);
 
-                    
                     bindingRegistry =
                         bindingRegistry.AddStepDefinition(stepDefinitionBinding);
                     
