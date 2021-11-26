@@ -37,7 +37,8 @@ public class ReprocessStepDefinitionFileTests
         //arrange
         NamerFactory.AdditionalInformation = testName;
         var namer = Approvals.GetDefaultNamer();
-        var stepDefinitionPath = Path.Combine(namer.SourcePath, namer.Name);
+        var stepDefinitionPath = Path.GetFullPath(Path.Combine(namer.SourcePath, namer.Name));
+       
         NamerFactory.AdditionalInformation = testName;
         var content = File.ReadAllText(stepDefinitionPath);
         var stepDefinitionFile = new CSharpStepDefinitionFile(stepDefinitionPath, content);

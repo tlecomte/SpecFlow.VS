@@ -331,23 +331,26 @@ namespace SpecFlow.VisualStudio.Discovery
                 var containingClass = method.Parent as ClassDeclarationSyntax;
                 var attributes = RenameStepStepDefinitionClassAction.GetAttributesWithTokens(method);
 
-                //var sourceKey = GetKey(_sourceFiles, startSequencePoint.SourcePath);
-                //var sourceLocation = $"#{sourceKey}|{startSequencePoint.StartLine}|{startSequencePoint.StartColumn}|{endSequencePoint.EndLine}|{endSequencePoint.EndColumn}"";
-                var methodBodyToken = method.Body.GetFirstToken();
-                var lineSpan = methodBodyToken.GetLocation().GetLineSpan();
-                var mappedLineSpan = methodBodyToken.GetLocation().GetMappedLineSpan();
-                var sourceLocationString = $"#0|1|9|35|46";
-                
+                var methodBodyBeginToken = method.Body.GetFirstToken();
+                var methodBodyBeginPosition = methodBodyBeginToken.GetLocation().GetLineSpan().StartLinePosition;
+                var methodBodyEndToken = method.Body.GetLastToken();
+                var methodBodyEndPosition = methodBodyEndToken.GetLocation().GetLineSpan().StartLinePosition;
+
+                Scope scope = null;
+                var parameterTypes = Array.Empty<string>();
+                var sourceLocation = new SourceLocation(stepDefinitionFile.StepDefinitionPath, methodBodyBeginPosition.Line+1, 
+                    methodBodyBeginPosition.Character+1, 
+                    methodBodyEndPosition.Line + 1, 
+                    methodBodyEndPosition.Character + 1);
+                var implementation = new ProjectStepDefinitionImplementation($"{containingClass.Identifier.Text}.{method.Identifier.Text}", parameterTypes, sourceLocation);
+
                 foreach (var (attribute, token) in attributes)
                 {
-                    var stepDefinitionType = (ScenarioBlock) Enum.Parse(typeof(ScenarioBlock), attribute.Name.ToString());
+                    var stepDefinitionType = (ScenarioBlock)Enum.Parse(typeof(ScenarioBlock), attribute.Name.ToString());
                     var regex = new Regex($"^{token.ValueText}$");
-                    Scope scope = null;
-                    var parameterTypes = Array.Empty<string>();
-                    var sourceLocation = new SourceLocation(stepDefinitionFile.StepDefinitionPath, 1, 2, 3, 4);
-                    var implementation = new ProjectStepDefinitionImplementation($"{containingClass.Identifier.Text}.{method.Identifier.Text}", parameterTypes, sourceLocation);
 
                     var stepDefinitionBinding = new ProjectStepDefinitionBinding(stepDefinitionType, regex, scope, implementation, token.ValueText);
+
 
                     bindingRegistry =
                         bindingRegistry.AddStepDefinition(stepDefinitionBinding);
