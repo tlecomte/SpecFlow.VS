@@ -59,7 +59,11 @@ namespace SpecFlow.VisualStudio.Specs.StepDefinitions
         {
             _projectScope = new InMemoryStubProjectScope(_ideScope);
             _projectScope.AddSpecFlowPackage();
+#if DEBUG
+            _discoveryService = MockableDiscoveryService.Setup(_projectScope, TimeSpan.Zero);
+#else
             _discoveryService = MockableDiscoveryService.Setup(_projectScope, TimeSpan.FromMilliseconds(100));
+#endif
         }
 
         [Given(@"there is a SpecFlow project scope with calculator step definitions")]

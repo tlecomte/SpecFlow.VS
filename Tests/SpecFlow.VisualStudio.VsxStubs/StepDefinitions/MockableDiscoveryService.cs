@@ -85,6 +85,7 @@ namespace SpecFlow.VisualStudio.VsxStubs.StepDefinitions
             do
             {
                 result = await Task.WhenAny(_discoveryCompletionSource.Task, timeout) as Task<bool>;
+                if (timeOutToken.IsCancellationRequested) throw new TaskCanceledException("Discovery is not performed in time");
             } while (result?.Result != true);
         }
     }

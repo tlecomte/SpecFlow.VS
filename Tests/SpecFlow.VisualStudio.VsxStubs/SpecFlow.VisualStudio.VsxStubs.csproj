@@ -5,6 +5,7 @@
     <AssemblyOriginatorKeyFile>..\..\Key.snk</AssemblyOriginatorKeyFile>
     <VsEditorAssembliesLocation Condition="'$(VsEditorAssembliesLocation)' == ''">..\ExternalTestDependencies\VS\</VsEditorAssembliesLocation>
     <NoWarn>CS0067</NoWarn> <!--The event 'xxx' is never used-->
+    <NoWarn>VSTHRD200</NoWarn> <!--Use "Async" suffix in names of methods that return an awaitable type.-->
   </PropertyGroup>
 
   <ItemGroup>
