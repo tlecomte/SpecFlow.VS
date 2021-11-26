@@ -10,10 +10,10 @@
       Method:`Feature1StepDefinitions.WhenIPressAdd`
       ParameterTypes:`System.String[]`
       SourceLocation:
-        SourceFile:`#0`
-        SourceFileColumn:`9`
-        SourceFileEndColumn:`46`
-        SourceFileEndLine:`35`
+        SourceFile:`C:\git\SpecFlow.VS\Tests\SpecFlow.VisualStudio.Tests\Discovery\../ApprovalTestData\ReprocessStepDefinitionFileTests.Approval.IPressAdd.cs`
+        SourceFileColumn:`2`
+        SourceFileEndColumn:`4`
+        SourceFileEndLine:`3`
         SourceLocationSpan:``
         SourceFileLine:`1`
     Expression:`I press add`

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -17,6 +18,7 @@ using SpecFlow.VisualStudio.ProjectSystem.Configuration;
 using SpecFlow.VisualStudio.ProjectSystem.Settings;
 using Microsoft.VisualStudio.Shell;
 using SpecFlow.VisualStudio.Editor.Commands;
+using SpecFlow.VisualStudio.Editor.Services.Parser;
 using SpecFlow.VisualStudio.SpecFlowConnector.Models;
 
 namespace SpecFlow.VisualStudio.Discovery
@@ -323,9 +325,6 @@ namespace SpecFlow.VisualStudio.Discovery
             }).ToArray();
             var allMethods = dn.OfType<MethodDeclarationSyntax>().ToArray();
 
-            var bi = new BindingImporter(new Dictionary<string, string>(), new Dictionary<string, string>(),
-                _projectScope.IdeScope.Logger);
-
             var bindingRegistry = await GetBindingRegistryAsync();
             foreach (MethodDeclarationSyntax method in allMethods)
             {
@@ -337,23 +336,21 @@ namespace SpecFlow.VisualStudio.Discovery
                 var methodBodyToken = method.Body.GetFirstToken();
                 var lineSpan = methodBodyToken.GetLocation().GetLineSpan();
                 var mappedLineSpan = methodBodyToken.GetLocation().GetMappedLineSpan();
-                var sourceLocation = $"#0|1|9|35|46";
-
+                var sourceLocationString = $"#0|1|9|35|46";
+                
                 foreach (var (attribute, token) in attributes)
                 {
-                    var sd = new StepDefinition();
+                    var stepDefinitionType = (ScenarioBlock) Enum.Parse(typeof(ScenarioBlock), attribute.Name.ToString());
+                    var regex = new Regex($"^{token.ValueText}$");
+                    Scope scope = null;
+                    var parameterTypes = Array.Empty<string>();
+                    var sourceLocation = new SourceLocation(stepDefinitionFile.StepDefinitionPath, 1, 2, 3, 4);
+                    var implementation = new ProjectStepDefinitionImplementation($"{containingClass.Identifier.Text}.{method.Identifier.Text}", parameterTypes, sourceLocation);
 
-                    sd.Method = $"{containingClass.Identifier.Text}.{method.Identifier.Text}";
-                    sd.Type = attribute.Name.ToString();
-                    sd.Expression = token.ValueText;
-                    sd.Regex = $"^{sd.Expression}$";
-                    sd.SourceLocation = sourceLocation;
-                    
-                    var stepDefinitionBinding = bi.ImportStepDefinition(sd);
+                    var stepDefinitionBinding = new ProjectStepDefinitionBinding(stepDefinitionType, regex, scope, implementation, token.ValueText);
 
                     bindingRegistry =
                         bindingRegistry.AddStepDefinition(stepDefinitionBinding);
-                    
                 }
             }
             ReplaceBindingRegistry(bindingRegistry);
