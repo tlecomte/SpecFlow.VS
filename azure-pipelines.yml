@@ -1,5 +1,6 @@
 trigger:
 - main
+- BoundSteps
 
 pool:
   vmImage: 'windows-2022'
