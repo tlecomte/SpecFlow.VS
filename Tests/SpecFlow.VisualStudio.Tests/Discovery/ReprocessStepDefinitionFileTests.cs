@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ public class ReprocessStepDefinitionFileTests
         _projectScope.AddSpecFlowPackage();
         var discoveryService =
             MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, Array.Empty<StepDefinition>(), TimeSpan.Zero);
-        discoveryService.WaitUntilDiscoveryPerformed();
+        await discoveryService.WaitUntilDiscoveryPerformed();
 
         //act
         await discoveryService.ProcessAsync(stepDefinitionFile);
@@ -58,34 +59,45 @@ public class ReprocessStepDefinitionFileTests
         Approvals.Verify(dumped);
     }
 
-    [Theory(Skip = "Doesn't work yet")]
+    [Theory]
     [InlineData("IPressAdd.cs")]
     public async Task OutdatedStepDefinitionsAreRemovedFromBindingRegistry(string testName)
     {
         var stepDefinitionFilePath = $"C:\\<Full path to>\\{testName}";
+        var otherStepDefinitionFilePath = $"C:\\<Full path to>\\Other{testName}";
         var stepDefinitionFile = new CSharpStepDefinitionFile(stepDefinitionFilePath, @"{
 [Binding]
 public class Foo{
-    [StepDefinition(""expression"")]
+    [When(""expression"")]
     public void Method(){}
 }
 }");
 
         _projectScope.AddSpecFlowPackage();
-        var initialStepDefinitions = new[] { new StepDefinition{SourceLocation = stepDefinitionFilePath } };
+        var initialStepDefinitions = new[] { 
+            new StepDefinition{Method = "Method", Regex = "^outdated expression", SourceLocation = stepDefinitionFilePath },
+            new StepDefinition{Method = "Foo", Regex = "^expression$", SourceLocation = otherStepDefinitionFilePath }
+        };
         var discoveryService =
             MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, initialStepDefinitions, TimeSpan.Zero);
-        discoveryService.WaitUntilDiscoveryPerformed();
+        await discoveryService.WaitUntilDiscoveryPerformed();
 
         //act
- //       await discoveryService.ProcessAsync(stepDefinitionFile);
+        await discoveryService.ProcessAsync(stepDefinitionFile);
 
         //assert
         ProjectBindingRegistry bindingRegistry = await discoveryService.GetBindingRegistryAsync();
         Dump(bindingRegistry);
 
-        bindingRegistry.StepDefinitions.Should().ContainSingle(binding =>
-            binding.Implementation.SourceLocation.SourceFile == stepDefinitionFilePath, "the outdated stepDefinition is removed");
+        _projectScope.StubLogger.Messages.Should().NotContain(m => m.Level == TraceLevel.Error || m.Level == TraceLevel.Warning);
+        bindingRegistry.StepDefinitions
+            .Should()
+            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == stepDefinitionFilePath, "the outdated stepDefinition is removed")
+            .Which.Regex.ToString().Should().Be("^expression$");
+
+        bindingRegistry.StepDefinitions
+            .Should()
+            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == otherStepDefinitionFilePath, "the outdated stepDefinition is removed");
     }
 
     private string _indent = string.Empty;
