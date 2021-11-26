@@ -42,7 +42,7 @@ public class ReprocessStepDefinitionFileTests
        
         NamerFactory.AdditionalInformation = testName;
         var content = File.ReadAllText(stepDefinitionPath);
-        var stepDefinitionFile = new CSharpStepDefinitionFile(stepDefinitionPath, content);
+        var stepDefinitionFile = new CSharpStepDefinitionFile($"C:\\<Full path to>\\{testName}", content);
 
         _projectScope.AddSpecFlowPackage();
         var discoveryService =
@@ -56,6 +56,36 @@ public class ReprocessStepDefinitionFileTests
         ProjectBindingRegistry bindingRegistry = await discoveryService.GetBindingRegistryAsync();
         var dumped = Dump(bindingRegistry);
         Approvals.Verify(dumped);
+    }
+
+    [Theory(Skip = "Doesn't work yet")]
+    [InlineData("IPressAdd.cs")]
+    public async Task OutdatedStepDefinitionsAreRemovedFromBindingRegistry(string testName)
+    {
+        var stepDefinitionFilePath = $"C:\\<Full path to>\\{testName}";
+        var stepDefinitionFile = new CSharpStepDefinitionFile(stepDefinitionFilePath, @"{
+[Binding]
+public class Foo{
+    [StepDefinition(""expression"")]
+    public void Method(){}
+}
+}");
+
+        _projectScope.AddSpecFlowPackage();
+        var initialStepDefinitions = new[] { new StepDefinition{SourceLocation = stepDefinitionFilePath } };
+        var discoveryService =
+            MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, initialStepDefinitions, TimeSpan.Zero);
+        discoveryService.WaitUntilDiscoveryPerformed();
+
+        //act
+ //       await discoveryService.ProcessAsync(stepDefinitionFile);
+
+        //assert
+        ProjectBindingRegistry bindingRegistry = await discoveryService.GetBindingRegistryAsync();
+        Dump(bindingRegistry);
+
+        bindingRegistry.StepDefinitions.Should().ContainSingle(binding =>
+            binding.Implementation.SourceLocation.SourceFile == stepDefinitionFilePath, "the outdated stepDefinition is removed");
     }
 
     private string _indent = string.Empty;
