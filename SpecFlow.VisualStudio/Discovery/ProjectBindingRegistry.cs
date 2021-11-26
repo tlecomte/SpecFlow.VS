@@ -182,9 +182,21 @@ namespace SpecFlow.VisualStudio.Discovery
             return new ProjectBindingRegistry(stepDefinitions);
         }
 
+        public ProjectBindingRegistry AddStepDefinitions(IEnumerable<ProjectStepDefinitionBinding> projectStepDefinitionBindings)
+        {
+            var stepDefinitions = StepDefinitions.ToList();
+            stepDefinitions.AddRange(projectStepDefinitionBindings);
+            return new ProjectBindingRegistry(stepDefinitions);
+        }
+
         public ProjectBindingRegistry ReplaceStepDefinition(ProjectStepDefinitionBinding original, ProjectStepDefinitionBinding replacement)
         {
             return new ProjectBindingRegistry(StepDefinitions.Select(sd => sd == original ? replacement : sd));
+        }
+
+        public ProjectBindingRegistry Where(Func<ProjectStepDefinitionBinding, bool> predicate)
+        {
+            return new ProjectBindingRegistry(StepDefinitions.Where(predicate));
         }
     }
 }

@@ -325,7 +325,7 @@ namespace SpecFlow.VisualStudio.Discovery
             }).ToArray();
             var allMethods = dn.OfType<MethodDeclarationSyntax>().ToArray();
 
-            var bindingRegistry = await GetBindingRegistryAsync();
+            var ProjectStepDefinitionBindings = new List<ProjectStepDefinitionBinding>(allMethods.Length);
             foreach (MethodDeclarationSyntax method in allMethods)
             {
                 var containingClass = method.Parent as ClassDeclarationSyntax;
@@ -351,11 +351,13 @@ namespace SpecFlow.VisualStudio.Discovery
 
                     var stepDefinitionBinding = new ProjectStepDefinitionBinding(stepDefinitionType, regex, scope, implementation, token.ValueText);
 
-
-                    bindingRegistry =
-                        bindingRegistry.AddStepDefinition(stepDefinitionBinding);
+                    ProjectStepDefinitionBindings.Add(stepDefinitionBinding);
                 }
             }
+            var bindingRegistry = await GetBindingRegistryAsync();
+            bindingRegistry = bindingRegistry
+                .Where(binding=>binding.Implementation.SourceLocation.SourceFile != stepDefinitionFile.StepDefinitionPath)
+                .AddStepDefinitions(ProjectStepDefinitionBindings);
             ReplaceBindingRegistry(bindingRegistry);
         }
     }
