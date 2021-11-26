@@ -12,7 +12,7 @@ public abstract class EditorTestBase
         ProjectScope = new InMemoryStubProjectScope(ideScope);
     }
 
-    protected StubWpfTextView ArrangeTextView(
+    protected async Task<StubWpfTextView> ArrangeTextView(
         TestStepDefinition[] stepDefinitions,
         TestFeatureFile[] featureFiles)
     {
@@ -27,7 +27,7 @@ public abstract class EditorTestBase
 
         var discoveryService =
             MockableDiscoveryService.SetupWithInitialStepDefinitions(ProjectScope, stepDefinitionClassFile.StepDefinitions, TimeSpan.Zero);
-        discoveryService.WaitUntilDiscoveryPerformed();
+        await discoveryService.WaitUntilDiscoveryPerformed();
 
         return textView;
     }

@@ -24,7 +24,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         {
             var stepDefinition = ArrangeStepDefinition(@"""I choose add""");
             TestFeatureFile featureFile = ArrangeOneFeatureFile();
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             ModifyFeatureFileInEditor(featureFile, new Span(50, 16), "When I choose add");
             Dump(featureFile, "After modification");
@@ -39,7 +39,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         {
             var stepDefinition = ArrangeStepDefinition(@"""I choose add""");
             var featureFile = ArrangeOneFeatureFile();
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -55,7 +55,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         {
             var stepDefinition = ArrangeStepDefinition(expression);
             var featureFile = ArrangeOneFeatureFile();
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 

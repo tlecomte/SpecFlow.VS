@@ -18,7 +18,7 @@ public abstract class CommandTestBase<T> : EditorTestBase where T : DeveroomEdit
         _warningHeader = warningHeader;
     }
 
-    protected (StubWpfTextView textView, T command) ArrangeSut(
+    protected Task<(StubWpfTextView textView, T command)> ArrangeSut(
         TestStepDefinition stepDefinition, TestFeatureFile featureFile)
     {
         var stepDefinitions = stepDefinition.IsVoid
@@ -32,11 +32,11 @@ public abstract class CommandTestBase<T> : EditorTestBase where T : DeveroomEdit
         return ArrangeSut(stepDefinitions, featureFiles);
     }
 
-    protected (StubWpfTextView textView, T command) ArrangeSut(
+    protected async Task<(StubWpfTextView textView, T command)> ArrangeSut(
         TestStepDefinition[] stepDefinitions,
         TestFeatureFile[] featureFiles)
     {
-        var textView = ArrangeTextView(stepDefinitions, featureFiles);
+        var textView = await ArrangeTextView(stepDefinitions, featureFiles);
 
         var command = _commandFactory(ProjectScope);
         return (textView, command);

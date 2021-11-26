@@ -142,7 +142,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         private async Task StepDefinitionMustHaveValidExpression(TestStepDefinition stepDefinition, string errorMessage)
         {
             var featureFile = ArrangeOneFeatureFile(string.Empty);
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -176,7 +176,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var stepDefinitions = ArrangeStepDefinition(originalExpression);
             var featureFile = ArrangeOneFeatureFile(string.Empty);
             ArrangePopup(dialogExpression);
-            var (textView, command) = ArrangeSut(stepDefinitions, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinitions, featureFile);
             
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -207,7 +207,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var stepDefinitions = ArrangeStepDefinition(testExpression);
             var featureFile = ArrangeOneFeatureFile(string.Empty);
             ArrangePopup(modelStepText);
-            var (textView, command) = ArrangeSut(stepDefinitions, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinitions, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -223,7 +223,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var stepDefinition = ArrangeStepDefinition(@"""I press add""", attributeName: "WhenDerived");
             var featureFile = ArrangeOneFeatureFile(string.Empty);
             ArrangePopup(@"I choose add");
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -233,11 +233,11 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         }
 
         [Fact]
-        public void Popup_appears_when_there_are_multiple_step_definitions()
+        public async Task Popup_appears_when_there_are_multiple_step_definitions()
         {
             var stepDefinitions = ArrangeMultipleStepDefinitions();
             var featureFiles = new[] {ArrangeOneFeatureFile(string.Empty)};
-            var (textView, command) = ArrangeSut( stepDefinitions, featureFiles);
+            var (textView, command) = await ArrangeSut( stepDefinitions, featureFiles);
 
             command.PreExec(textView, command.Targets.First());
 
@@ -266,7 +266,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var stepDefinitions = ArrangeMultipleStepDefinitions();
             var featureFiles = new[] { ArrangeOneFeatureFile(string.Empty) };
             ArrangePopup(@"I choose add");
-            var (textView, command) = ArrangeSut(stepDefinitions, featureFiles);
+            var (textView, command) = await ArrangeSut(stepDefinitions, featureFiles);
 
             command.PreExec(textView, command.Targets.First());
             
@@ -291,7 +291,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
                 Scenario: Scenario1
                     When I press add");
             ArrangePopup(@"I choose add");
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -312,7 +312,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
                 Scenario: Scenario1
                     When {originalStepText}");
             ArrangePopup(updatedExpression);
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -366,7 +366,7 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
             var stepDefinition = CommandTestBase<RenameStepCommand>.ArrangeStepDefinition(originalExpression);
 
             ArrangePopup(updatedExpression);
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             await InvokeAndWaitAnalyticsEvent(command, textView);
 
@@ -378,14 +378,14 @@ namespace SpecFlow.VisualStudio.Tests.Editor.Commands
         [InlineData(2, @"@""I press add""", @"I press add")]
         [InlineData(3, @"""I press \\(add\\)""", @"I press \(add\)")]
         [InlineData(4, @"@""I press \(add\)""", @"I press \(add\)")]
-        public void The_right_expression_is_loaded_to_the_dialog(int _, string originalCSharpExpression, string expectedExpression)
+        public async Task The_right_expression_is_loaded_to_the_dialog(int _, string originalCSharpExpression, string expectedExpression)
         {
             var stepDefinition = ArrangeStepDefinition(originalCSharpExpression);
             var featureFile = ArrangeOneFeatureFile(string.Empty);
             RenameStepViewModel viewModel = null;
             (ProjectScope.IdeScope.WindowManager as StubWindowManager)?
                 .RegisterWindowAction<RenameStepViewModel>(model => viewModel = model);
-            var (textView, command) = ArrangeSut(stepDefinition, featureFile);
+            var (textView, command) = await ArrangeSut(stepDefinition, featureFile);
 
             command.PreExec(textView, command.Targets.First());
 

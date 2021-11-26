@@ -32,12 +32,12 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     }
 
     [Fact]
-    public void Warn_if_steps_have_been_defined_already()
+    public async Task Warn_if_steps_have_been_defined_already()
     {
         var stepDefinition = ArrangeStepDefinition();
         var featureFile = ArrangeOneFeatureFile();
 
-        var (_, command) = ArrangeSut(stepDefinition, featureFile);
+        var (_, command) = await ArrangeSut(stepDefinition, featureFile);
         var textView = CreateTextView(featureFile);
 
         Invoke(command, textView);
@@ -48,12 +48,12 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     }
 
     [Fact]
-    public void CreateStepDefinitionsDialog_cancelled()
+    public async Task CreateStepDefinitionsDialog_cancelled()
     {
         var stepDefinition = ArrangeStepDefinition(@"""I choose add""");
         var featureFile = ArrangeOneFeatureFile();
         
-        var (_, command) = ArrangeSut(stepDefinition, featureFile);
+        var (_, command) = await ArrangeSut(stepDefinition, featureFile);
         var textView = CreateTextView(featureFile);
 
         Invoke(command, textView);
@@ -68,7 +68,7 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
         var featureFile = ArrangeOneFeatureFile();
         
         ArrangePopup();
-        var (_, command) = ArrangeSut(TestStepDefinition.Void, featureFile);
+        var (_, command) = await ArrangeSut(TestStepDefinition.Void, featureFile);
         var textView = CreateTextView(featureFile);
 
         Invoke(command, textView);

@@ -253,17 +253,16 @@ namespace SpecFlow.VisualStudio.Specs.StepDefinitions
         [When(@"the project is built")]
         public void WhenTheProjectIsBuilt()
         {
-            _discoveryService.LastVersion = DateTime.UtcNow;
-            _discoveryService.IsDiscoveryPerformed = false;
+            _discoveryService.Invalidate();
             _ideScope.TriggerProjectsBuilt();
         }
 
         [When("the project is built and the initial binding discovery is performed")]
         [Given("the project is built and the initial binding discovery is performed")]
-        public void GivenTheProjectIsBuiltAndTheInitialBindingDiscoveryIsPerformed()
+        public async Task GivenTheProjectIsBuiltAndTheInitialBindingDiscoveryIsPerformed()
         {
             WhenTheProjectIsBuilt();
-            WhenTheBindingDiscoveryIsPerformed();
+            await WhenTheBindingDiscoveryIsPerformed();
         }
 
 
@@ -292,9 +291,9 @@ namespace SpecFlow.VisualStudio.Specs.StepDefinitions
         [Given(@"the initial binding discovery is performed")]
         [When(@"the initial binding discovery is performed")]
         [When(@"the binding discovery is performed")]
-        public void WhenTheBindingDiscoveryIsPerformed()
+        public async Task WhenTheBindingDiscoveryIsPerformed()
         {
-            Wait.For(() => _discoveryService.IsDiscoveryPerformed.Should().BeTrue());
+            await _discoveryService.WaitUntilDiscoveryPerformed();
         }
 
         [When(@"I invoke the ""(.*)"" command by typing ""(.*)""")]
