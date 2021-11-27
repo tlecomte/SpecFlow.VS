@@ -4,12 +4,14 @@
 [UseApprovalSubdirectory("../ApprovalTestData")]
 public class ReprocessStepDefinitionFileTests
 {
+    private readonly ITestOutputHelper _testOutputHelper;
     private readonly InMemoryStubProjectScope _projectScope;
 
     private string _indent = string.Empty;
 
     public ReprocessStepDefinitionFileTests(ITestOutputHelper testOutputHelper)
     {
+        _testOutputHelper = testOutputHelper;
         StubIdeScope ideScope = new StubIdeScope(testOutputHelper);
         _projectScope = new InMemoryStubProjectScope(ideScope);
     }
@@ -118,7 +120,11 @@ public class Foo{
         }
 
         DecreaseIndent();
-        return sb.ToString();
+        var dump = sb.ToString();
+        _testOutputHelper.WriteLine("------------------- received ---------------------------");
+        _testOutputHelper.WriteLine(dump);
+        _testOutputHelper.WriteLine("--------------------------------------------------------");
+        return dump;
     }
 
     public string Dump(ProjectStepDefinitionBinding binding)
