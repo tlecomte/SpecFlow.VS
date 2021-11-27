@@ -1,29 +1,12 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using ApprovalTests;
-using ApprovalTests.Namers;
-using ApprovalTests.Reporters;
-using FluentAssertions;
-using Microsoft.VisualStudio.Text;
-using Newtonsoft.Json;
-using SpecFlow.VisualStudio.Discovery;
-using SpecFlow.VisualStudio.ProjectSystem;
-using SpecFlow.VisualStudio.SpecFlowConnector.Models;
-using SpecFlow.VisualStudio.VsxStubs.ProjectSystem;
-using SpecFlow.VisualStudio.VsxStubs.StepDefinitions;
-using Xunit;
-using Xunit.Abstractions;
+﻿namespace SpecFlow.VisualStudio.Tests.Discovery;
 
-namespace SpecFlow.VisualStudio.Tests.Discovery;
-
-[UseReporter/*(typeof(VisualStudioReporter))*/]
+[UseReporter /*(typeof(VisualStudioReporter))*/]
 [UseApprovalSubdirectory("../ApprovalTestData")]
 public class ReprocessStepDefinitionFileTests
 {
     private readonly InMemoryStubProjectScope _projectScope;
+
+    private string _indent = string.Empty;
 
     public ReprocessStepDefinitionFileTests(ITestOutputHelper testOutputHelper)
     {
@@ -35,20 +18,22 @@ public class ReprocessStepDefinitionFileTests
     [InlineData("IPressAdd.cs")]
     [InlineData("MultipleStepDefinitions.cs")]
     [InlineData("IntParameter.cs")]
+    [InlineData("FileScopedNamespace.cs")]
     public async Task Approval(string testName)
     {
         //arrange
         NamerFactory.AdditionalInformation = testName;
         var namer = Approvals.GetDefaultNamer();
         var stepDefinitionPath = Path.GetFullPath(Path.Combine(namer.SourcePath, namer.Name));
-       
+
         NamerFactory.AdditionalInformation = testName;
         var content = File.ReadAllText(stepDefinitionPath);
         var stepDefinitionFile = new CSharpStepDefinitionFile($"C:\\<Full path to>\\{testName}", content);
 
         _projectScope.AddSpecFlowPackage();
         var discoveryService =
-            MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, Array.Empty<StepDefinition>(), TimeSpan.Zero);
+            MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, Array.Empty<StepDefinition>(),
+                TimeSpan.Zero);
         await discoveryService.WaitUntilDiscoveryPerformed();
 
         //act
@@ -75,12 +60,16 @@ public class Foo{
 }");
 
         _projectScope.AddSpecFlowPackage();
-        var initialStepDefinitions = new[] { 
-            new StepDefinition{Method = "Method", Regex = "^outdated expression", SourceLocation = stepDefinitionFilePath },
-            new StepDefinition{Method = "MethodInOtherFile", Regex = "^expression$", SourceLocation = otherStepDefinitionFilePath }
+        var initialStepDefinitions = new[]
+        {
+            new StepDefinition
+                {Method = "Method", Regex = "^outdated expression", SourceLocation = stepDefinitionFilePath},
+            new StepDefinition
+                {Method = "MethodInOtherFile", Regex = "^expression$", SourceLocation = otherStepDefinitionFilePath}
         };
         var discoveryService =
-            MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, initialStepDefinitions, TimeSpan.Zero);
+            MockableDiscoveryService.SetupWithInitialStepDefinitions(_projectScope, initialStepDefinitions,
+                TimeSpan.Zero);
         await discoveryService.WaitUntilDiscoveryPerformed();
 
         //act
@@ -90,18 +79,20 @@ public class Foo{
         ProjectBindingRegistry bindingRegistry = await discoveryService.GetBindingRegistryAsync();
         Dump(bindingRegistry);
 
-        _projectScope.StubLogger.Messages.Should().NotContain(m => m.Level == TraceLevel.Error || m.Level == TraceLevel.Warning);
+        _projectScope.StubIdeScope.StubLogger.Messages.Should()
+            .NotContain(m => m.Level == TraceLevel.Error || m.Level == TraceLevel.Warning);
+
         bindingRegistry.StepDefinitions
             .Should()
-            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == stepDefinitionFilePath, "the outdated stepDefinition is removed")
+            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == stepDefinitionFilePath,
+                "the outdated stepDefinition is removed")
             .Which.Regex.ToString().Should().Be("^expression$");
 
         bindingRegistry.StepDefinitions
             .Should()
-            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == otherStepDefinitionFilePath, "the outdated stepDefinition is removed");
+            .ContainSingle(binding => binding.Implementation.SourceLocation.SourceFile == otherStepDefinitionFilePath,
+                "the outdated stepDefinition is removed");
     }
-
-    private string _indent = string.Empty;
 
     private void IncreaseIndent()
     {
@@ -154,10 +145,7 @@ public class Foo{
         sb.AppendLine($"{_indent}{nameof(implementation.Method)}:`{implementation.Method}`");
         sb.AppendLine($"{_indent}{nameof(implementation.ParameterTypes)}:[{implementation.ParameterTypes.Length}]");
         IncreaseIndent();
-        foreach (string parameterType in implementation.ParameterTypes)
-        {
-            sb.AppendLine($"{_indent}- `{parameterType}`");
-        }
+        foreach (string parameterType in implementation.ParameterTypes) sb.AppendLine($"{_indent}- `{parameterType}`");
         DecreaseIndent();
         sb.AppendLine($"{_indent}{nameof(implementation.SourceLocation)}:");
         sb.Append(Dump(implementation.SourceLocation));

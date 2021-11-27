@@ -1,20 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using EnvDTE;
-using FluentAssertions;
-using SpecFlow.VisualStudio.Editor.Commands;
-using SpecFlow.VisualStudio.Editor.Services;
-using SpecFlow.VisualStudio.ProjectSystem;
-using SpecFlow.VisualStudio.SpecFlowConnector.Models;
-using SpecFlow.VisualStudio.UI.ViewModels;
-using SpecFlow.VisualStudio.VsxStubs;
-using SpecFlow.VisualStudio.VsxStubs.ProjectSystem;
-using SpecFlow.VisualStudio.VsxStubs.StepDefinitions;
-using Xunit;
-using Xunit.Abstractions;
-
-namespace SpecFlow.VisualStudio.Tests.Editor.Commands;
+﻿namespace SpecFlow.VisualStudio.Tests.Editor.Commands;
 
 public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
 {
@@ -28,7 +12,8 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     private void ArrangePopup()
     {
         (ProjectScope.IdeScope.WindowManager as StubWindowManager)
-            .RegisterWindowAction<CreateStepDefinitionsDialogViewModel>(model => model.Result = CreateStepDefinitionsDialogResult.Create);
+            .RegisterWindowAction<CreateStepDefinitionsDialogViewModel>(model =>
+                model.Result = CreateStepDefinitionsDialogResult.Create);
     }
 
     [Fact]
@@ -52,12 +37,12 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     {
         var stepDefinition = ArrangeStepDefinition(@"""I choose add""");
         var featureFile = ArrangeOneFeatureFile();
-        
+
         var (_, command) = await ArrangeSut(stepDefinition, featureFile);
         var textView = CreateTextView(featureFile);
 
         Invoke(command, textView);
-        
+
         ThereWereNoWarnings();
     }
 
@@ -66,7 +51,7 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
     public async Task Step_definition_class_saved(string _, string expression)
     {
         var featureFile = ArrangeOneFeatureFile();
-        
+
         ArrangePopup();
         var (_, command) = await ArrangeSut(TestStepDefinition.Void, featureFile);
         var textView = CreateTextView(featureFile);
@@ -74,11 +59,12 @@ public class DefineStepsCommandTests : CommandTestBase<DefineStepsCommand>
         Invoke(command, textView);
 
         ThereWereNoWarnings();
-        var createdStepDefinitionContent = ProjectScope.StubIdeScope.CurrentTextView.TextBuffer.CurrentSnapshot.GetText();
+        var createdStepDefinitionContent =
+            ProjectScope.StubIdeScope.CurrentTextView.TextBuffer.CurrentSnapshot.GetText();
         Dump(ProjectScope.StubIdeScope.CurrentTextView, "Created stepDefinition file");
         createdStepDefinitionContent.Should().Contain(expression);
 
-        System.Threading.Thread.Sleep(1000); //TODO: implement non-blocking wait
+        Thread.Sleep(1000); //TODO: implement non-blocking wait
         await BindingRegistryIsModified(expression);
     }
 }

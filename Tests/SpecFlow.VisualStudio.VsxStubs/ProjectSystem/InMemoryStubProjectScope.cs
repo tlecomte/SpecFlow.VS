@@ -25,7 +25,6 @@ namespace SpecFlow.VisualStudio.VsxStubs.ProjectSystem
         public string ProjectName { get; } = "Test Project";
         public string ProjectFullName { get; } = "Test Project.csproj";
         public string DefaultNamespace => ProjectName.Replace(" ", "");
-        public StubLogger StubLogger => StubIdeScope.StubLogger;
 
         public List<NuGetPackageReference> PackageReferencesList = new List<NuGetPackageReference>();
         public Dictionary<string, string> FilesAdded { get; } = new Dictionary<string, string>();
